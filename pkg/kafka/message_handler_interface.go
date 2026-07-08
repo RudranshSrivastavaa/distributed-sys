@@ -1,0 +1,15 @@
+package kafka
+
+import "context"
+
+type MessageHandler interface {
+
+	Handle(
+
+		ctx context.Context,
+
+		message Message,
+
+	) error
+
+}

@@ -1,25 +1,32 @@
 package service
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 
-	"github.com/rudransh/distributed-commerce/pkg/circuitbreaker"
 	"github.com/rudransh/distributed-commerce/payment/internal/dto"
 	"github.com/rudransh/distributed-commerce/payment/internal/provider"
 	"github.com/rudransh/distributed-commerce/payment/internal/repository"
+	"github.com/rudransh/distributed-commerce/pkg/circuitbreaker"
 	"github.com/rudransh/distributed-commerce/pkg/retry"
+	sagaevent "github.com/rudransh/distributed-commerce/saga/event"
 )
 
 type PaymentService interface {
 
-	CreatePayment(
-		request dto.CreatePaymentRequest,
-	) (dto.PaymentResponse, error)
+    CreatePayment(ctx context.Context, 
+		request dto.CreatePaymentRequest) (dto.PaymentResponse, error)
 
 	ProcessPayment(
 		paymentID uuid.UUID,
 		request dto.ProcessPaymentRequest,
 	) (dto.PaymentResponse, error)
+
+	HandleProcessPaymentCommand(
+	ctx context.Context,
+	request sagaevent.ProcessPaymentPayload,
+) error
 
 	GetPayment(
 		id uuid.UUID,
@@ -46,6 +53,7 @@ type paymentService struct {
 	retryExecutor *retry.Executor
 
 	breaker *circuitbreaker.Breaker
+
 }
 
 func NewPaymentService(
@@ -55,6 +63,7 @@ func NewPaymentService(
 	gateway provider.PaymentGateway,
 	retryExecutor *retry.Executor,
 	breaker *circuitbreaker.Breaker,
+
 ) PaymentService {
 
 	return &paymentService{

@@ -95,3 +95,20 @@ func (r *reservationRepository) FindExpiredReservations(before time.Time) ([]mod
 	return reservations, nil
 
 }
+
+func (r *reservationRepository) FindByOrderIDD(
+
+	orderID string,
+
+) ([]model.Reservation, error) {
+
+	var reservations []model.Reservation
+
+	err := r.db.
+
+		Where("order_id = ?", orderID).
+
+		Find(&reservations).Error
+
+	return reservations, err
+}

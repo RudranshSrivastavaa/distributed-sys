@@ -6,8 +6,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+
+	command "github.com/rudransh/distributed-commerce/inventory/internal/command"
 	"github.com/rudransh/distributed-commerce/inventory/internal/database"
 	"github.com/rudransh/distributed-commerce/inventory/internal/handlers"
+	"github.com/rudransh/distributed-commerce/inventory/internal/outbox"
 	"github.com/rudransh/distributed-commerce/inventory/internal/repository"
 	"github.com/rudransh/distributed-commerce/inventory/internal/routes"
 	"github.com/rudransh/distributed-commerce/inventory/internal/service"
@@ -15,6 +18,7 @@ import (
 
 	"github.com/rudransh/distributed-commerce/pkg/config"
 	"github.com/rudransh/distributed-commerce/pkg/http/middleware"
+	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
 	"github.com/rudransh/distributed-commerce/pkg/logger"
 )
 
@@ -22,7 +26,61 @@ func Start() {
 
 	log := logger.New(config.Services.Inventory.Name)
 
+	//----------------------------------------------------
+	// Database
+	//----------------------------------------------------
+
 	database.Connect()
+
+	db := database.DB
+
+	//----------------------------------------------------
+	// Kafka
+	//----------------------------------------------------
+
+	kafkaConfig := kafkaa.DefaultConfig()
+	kafkaConfig.Consumer.GroupID = "inventory-group"
+
+	client := kafkaa.NewClient(kafkaConfig)
+
+	producer, err := kafkaa.NewProducer(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
+	defer producer.Close()
+
+
+	//----------------------------------------------------
+	// Outbox Relay
+	//----------------------------------------------------
+
+	outboxRepo := repository.NewOutboxRepository(db)
+
+	relay := outbox.NewRelay(
+		outbox.DefaultConfig(),
+		outboxRepo,
+		producer,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	defer cancel()
+	defer relay.Stop()
+
+	go func() {
+
+		log.Println("Starting Inventory Outbox Relay...")
+
+		if err := relay.Start(ctx); err != nil {
+			log.Printf("Inventory relay stopped: %v", err)
+		}
+	}()
+
+	//----------------------------------------------------
+	// Fiber
+	//----------------------------------------------------
 
 	app := fiber.New()
 
@@ -31,13 +89,21 @@ func Start() {
 	app.Use(middleware.CORS())
 	app.Use(middleware.Logger())
 
-	productRepo := repository.NewProductRepository(database.DB)
+	//----------------------------------------------------
+	// Repositories
+	//----------------------------------------------------
 
-	inventoryRepo := repository.NewInventoryRepository(database.DB)
+	productRepo := repository.NewProductRepository(db)
 
-	reservationRepo := repository.NewReservationRepository(database.DB)
+	inventoryRepo := repository.NewInventoryRepository(db)
 
-	txManager := repository.NewTransactionManager(database.DB)
+	reservationRepo := repository.NewReservationRepository(db)
+
+	txManager := repository.NewTransactionManager(db)
+
+	//----------------------------------------------------
+	// Service
+	//----------------------------------------------------
 
 	inventoryService := service.NewInventoryService(
 		productRepo,
@@ -45,14 +111,65 @@ func Start() {
 		reservationRepo,
 		txManager,
 	)
+
+	//----------------------------------------------------
+	// Kafka Consumer
+	//----------------------------------------------------
+
+	dispatcher := kafkaa.NewDispatcher()
+
+	dispatcher.Register(
+		kafkaa.ReserveInventory,
+		kafkaa.WrapHandler(
+			command.NewReserveInventoryHandler(
+				inventoryService,
+			),
+		),
+	)
+
+	dispatcher.Register(
+	kafkaa.ReleaseInventory,
+	kafkaa.WrapHandler(
+		command.NewReleaseInventoryHandler(
+			inventoryService,
+		),
+	),
+)
+
+	host,_ := kafkaa.NewConsumerHost(client)
+
+	host.Register(
+		kafkaa.SagaCommands,
+		dispatcher,
+	)
+
+	go func() {
+
+		log.Println("Starting Inventory Consumer...")
+
+		if err := host.Start(ctx); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	//----------------------------------------------------
+	// Reservation Expiry Worker
+	//----------------------------------------------------
+
 	inventoryWorker := worker.NewReservationExpiryWorker(
 		inventoryService,
 		time.Minute,
 	)
-	ctx := context.Background()
+
 	go inventoryWorker.Start(ctx)
 
-	handler := handlers.NewInventoryHandler(inventoryService)
+	//----------------------------------------------------
+	// HTTP
+	//----------------------------------------------------
+
+	handler := handlers.NewInventoryHandler(
+		inventoryService,
+	)
 
 	routes.Register(
 		app,
@@ -61,5 +178,7 @@ func Start() {
 
 	log.Println("Inventory Service Started")
 
-	log.Fatal(app.Listen(config.Services.Inventory.Port))
+	log.Fatal(
+		app.Listen(config.Services.Inventory.Port),
+	)
 }

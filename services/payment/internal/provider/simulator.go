@@ -44,7 +44,7 @@ func (s *SimulatorGateway) CreateIntent(payment *model.Payment) (*CreateIntentRe
 
 	// Your roadmap currently does this.
 	// Later we'll move this to Capture().
-	go s.sendWebhook(reference)
+	//go s.sendWebhook(reference)
 
 	return &CreateIntentResult{
 
@@ -72,6 +72,11 @@ func (s *SimulatorGateway) Capture(payment *model.Payment,request dto.ProcessPay
 	
 	if request.ForceFailure {
 
+		go s.sendWebhook(
+			payment.ProviderReference,
+			"FAILED",
+		)
+
 		return &PaymentResult{
 
 			Success: false,
@@ -82,6 +87,10 @@ func (s *SimulatorGateway) Capture(payment *model.Payment,request dto.ProcessPay
 		}, nil
 	}
 
+	go s.sendWebhook(
+		payment.ProviderReference,
+		"SUCCESS",
+	)
 
 	return &PaymentResult{
 
@@ -95,7 +104,7 @@ func (s *SimulatorGateway) Capture(payment *model.Payment,request dto.ProcessPay
 	}, nil
 }
 
-func (s *SimulatorGateway) sendWebhook(providerReference string) {
+func (s *SimulatorGateway) sendWebhook(providerReference string ,status string,) {
 
 	time.Sleep(10 * time.Second)
 
@@ -111,7 +120,7 @@ func (s *SimulatorGateway) sendWebhook(providerReference string) {
 
 		ProviderReference: providerReference,
 
-		Status: "SUCCESS",
+		Status: status,
 	}
 
 	body, err := json.Marshal(payload)

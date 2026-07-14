@@ -20,4 +20,6 @@ type ReservationRepository interface {
 
 	FindExpiredReservations(time.Time) ([]model.Reservation, error)
 
+	FindByOrderIDD(orderID string) ([]model.Reservation, error)
+
 }

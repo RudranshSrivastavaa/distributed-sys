@@ -38,6 +38,7 @@ func Connect() {
 		&model.Payment{},
 		&model.PaymentAttempt{},
 		&model.WebhookEvent{},
+		&model.OutboxEvent{},
 	)
 
 	if err != nil {

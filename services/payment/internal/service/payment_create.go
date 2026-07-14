@@ -1,14 +1,20 @@
 package service
 
 import (
+	"context"
+
+	"github.com/rudransh/distributed-commerce/payment/event"
 	"github.com/rudransh/distributed-commerce/payment/internal/dto"
 	"github.com/rudransh/distributed-commerce/payment/internal/model"
+	"github.com/rudransh/distributed-commerce/payment/internal/outbox"
 	"github.com/rudransh/distributed-commerce/payment/internal/repository"
 	"github.com/rudransh/distributed-commerce/payment/internal/state"
+	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
 	"gorm.io/gorm"
 )
 
 func (s *paymentService) CreatePayment(
+	ctx context.Context,
 	request dto.CreatePaymentRequest,
 ) (dto.PaymentResponse, error) {
 
@@ -28,7 +34,6 @@ func (s *paymentService) CreatePayment(
 		request.Amount,
 		request.Currency,
 	)
-
 	if err != nil {
 		return dto.PaymentResponse{}, err
 	}
@@ -38,24 +43,44 @@ func (s *paymentService) CreatePayment(
 	//----------------------------------------------------
 
 	payment := &model.Payment{
-		OrderID: request.OrderID,
-
-		Money: money,
-
-		Status: model.StatusCreated,
-
+		OrderID:  request.OrderID,
+		Money:    money,
+		Status:   model.StatusCreated,
 		Provider: request.Provider,
 	}
 
 	//----------------------------------------------------
-	// First Transaction
+	// Transaction 1
+	// Create payment + PAYMENT_CREATED Outbox
 	//----------------------------------------------------
 
 	err = s.transactionManager.Execute(func(tx *gorm.DB) error {
 
 		repo := repository.NewPaymentRepository(tx)
 
-		return repo.Create(payment)
+		outboxRepo := repository.NewOutboxRepository(tx)
+
+		publisher := outbox.NewOutboxPublisher(outboxRepo)
+
+		if err := repo.Create(payment); err != nil {
+			return err
+		}
+
+		evt, err := event.BuildPaymentCreatedEvent(payment)
+		if err != nil {
+			return err
+		}
+
+		if err := publisher.Publish(
+			ctx,
+			kafkaa.PaymentEvents,
+			payment.ID.String(),
+			evt,
+		); err != nil {
+			return err
+		}
+
+		return nil
 	})
 
 	if err != nil {
@@ -67,13 +92,12 @@ func (s *paymentService) CreatePayment(
 	//----------------------------------------------------
 
 	intent, err := s.createIntent(payment)
-
 	if err != nil {
 		return dto.PaymentResponse{}, err
 	}
 
 	//----------------------------------------------------
-	// Update Payment
+	// Move Payment -> PENDING
 	//----------------------------------------------------
 
 	payment.ProviderReference = intent.ProviderReference
@@ -85,11 +109,20 @@ func (s *paymentService) CreatePayment(
 		return dto.PaymentResponse{}, err
 	}
 
+	//----------------------------------------------------
+	// Transaction 2
+	// Only update payment
+	//----------------------------------------------------
+
 	err = s.transactionManager.Execute(func(tx *gorm.DB) error {
 
 		repo := repository.NewPaymentRepository(tx)
 
-		return repo.Update(payment)
+		if err := repo.Update(payment); err != nil {
+			return err
+		}
+
+		return nil
 	})
 
 	if err != nil {
@@ -105,5 +138,4 @@ func (s *paymentService) CreatePayment(
 		nil,
 		intent.PaymentURL,
 	), nil
-
 }

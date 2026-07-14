@@ -37,6 +37,7 @@ func Connect() {
 		&model.Product{},
 		&model.Inventory{},
 		&model.Reservation{},
+		&model.OutboxEvent{},
 	)
 
 	if err != nil {

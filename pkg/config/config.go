@@ -11,7 +11,7 @@ var Services = struct {
 	Inventory   Service
 	Payment     Service
 	Notification Service
-	Analytics   Service
+	Saga        Service
 }{
 	Gateway: Service{
 		Name: "gateway",
@@ -33,8 +33,8 @@ var Services = struct {
 		Name: "notification",
 		Port: ":8084",
 	},
-	Analytics: Service{
-		Name: "analytics",
-		Port: ":8085",
+	Saga : Service{
+		Name : "saga",
+		Port: ":8086",
 	},
 }

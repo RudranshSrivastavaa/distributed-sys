@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -107,7 +108,7 @@ func (h *PaymentHandler) CreatePayment(
 
 	}
 
-	payment, err := h.service.CreatePayment(request)
+	payment, err := h.service.CreatePayment(context.Background(),request)
 
 	if err != nil {
 

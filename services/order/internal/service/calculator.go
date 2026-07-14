@@ -1,6 +1,10 @@
 package service
 
-import "github.com/rudransh/distributed-commerce/order/internal/model"
+import (
+	"log"
+
+	"github.com/rudransh/distributed-commerce/order/internal/model"
+)
 
 func CalculateTotal(order *model.Order) {
 
@@ -11,7 +15,7 @@ func CalculateTotal(order *model.Order) {
 		total += item.Price * float64(item.Quantity)
 
 	}
-
+	log.Printf("Calculated Total = %f", total)
 	order.TotalAmount = total
 
 }

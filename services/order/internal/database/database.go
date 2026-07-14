@@ -37,6 +37,7 @@ func Connect() {
 		&model.Order{},
 		&model.OrderItem{},
 		&model.IdempotencyKey{},
+		&model.OutboxEvent{},
 	)
 
 	if err != nil {

@@ -11,9 +11,9 @@ import (
 type ReservationResponse struct {
 	ID uuid.UUID `json:"id"`
 
-	OrderID uuid.UUID `json:"orderId"`
+	OrderID uuid.UUID `json:"order_id"`
 
-	ProductID uuid.UUID `json:"productId"`
+	ProductID uuid.UUID `json:"product_id"`
 
 	Quantity int64 `json:"quantity"`
 

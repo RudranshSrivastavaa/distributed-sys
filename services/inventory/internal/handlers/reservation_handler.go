@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"context"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
@@ -23,9 +26,9 @@ func (h *InventoryHandler) Reserve(
 		)
 
 	}
-
+log.Printf("%+v\n", request)
 	reservation, err := h.service.Reserve(
-		request,
+		context.Background(),request,
 	)
 
 	if err != nil {
@@ -55,7 +58,7 @@ func (h *InventoryHandler) Release(
 		return response.BadRequest(c, "invalid reservation id")
 	}
 
-	reservation, err := h.service.Release(id)
+	reservation, err := h.service.Release(context.Background(),id)
 
 	if err != nil {
 		return response.BadRequest(c, err.Error())

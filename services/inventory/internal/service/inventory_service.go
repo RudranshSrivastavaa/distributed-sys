@@ -1,16 +1,23 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rudransh/distributed-commerce/inventory/event"
+	"github.com/rudransh/distributed-commerce/inventory/internal/database"
 	"github.com/rudransh/distributed-commerce/inventory/internal/dto"
 	inventory_error "github.com/rudransh/distributed-commerce/inventory/internal/errors"
 	"github.com/rudransh/distributed-commerce/inventory/internal/mapper"
 	"github.com/rudransh/distributed-commerce/inventory/internal/model"
+	"github.com/rudransh/distributed-commerce/inventory/internal/outbox"
 	"github.com/rudransh/distributed-commerce/inventory/internal/repository"
 	"github.com/rudransh/distributed-commerce/inventory/internal/state"
+	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
+	sagaevent "github.com/rudransh/distributed-commerce/saga/event"
 
 	"gorm.io/gorm"
 )
@@ -111,7 +118,7 @@ func (s *inventoryService) AddStock(productID uuid.UUID, request dto.AddStockReq
 
 }
 
-func (s *inventoryService) Reserve(
+func (s *inventoryService) Reserve(ctx context.Context,
 	request dto.CreateReservationRequest,
 ) (dto.ReservationResponse, error) {
 
@@ -127,11 +134,16 @@ func (s *inventoryService) Reserve(
 	var err error
 
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		
+
 		err = s.txManager.Execute(func(tx *gorm.DB) error {
 
 			inventoryRepo := repository.NewInventoryRepository(tx)
 			reservationRepo := repository.NewReservationRepository(tx)
+
+			outboxRepo := repository.NewOutboxRepository(tx)
+			publisher := outbox.NewOutboxPublisher(outboxRepo)
+
+			log.Println("1. Find inventory")
 
 			inventory, err := inventoryRepo.FindByProductID(
 				request.ProductID,
@@ -139,11 +151,11 @@ func (s *inventoryService) Reserve(
 			if err != nil {
 				return err
 			}
-
+			log.Println("2. Reserve inventory")
 			if err := inventory.Reserve(request.Quantity); err != nil {
 				return err
 			}
-
+			log.Println("3. Update inventory")
 			if err := inventoryRepo.UpdateWithVersion(inventory); err != nil {
 				return err
 			}
@@ -155,15 +167,32 @@ func (s *inventoryService) Reserve(
 				Status:    model.StatusReserved,
 				ExpiresAt: time.Now().Add(15 * time.Minute),
 			}
-
+			log.Println("4. Create reservation")
 			if err := reservationRepo.Create(reservation); err != nil {
+				return err
+			}
+			log.Println("5. Write outbox")
+			evt, err := event.BuildInventoryReservedEvent(
+				reservation,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			if err := publisher.Publish(
+				ctx,
+				kafkaa.InventoryEvents,
+				reservation.ID.String(),
+				evt,
+			); err != nil {
 				return err
 			}
 
 			return nil
 		})
-
 		if err == nil {
+			log.Println("6. Success")
 			break
 		}
 
@@ -171,7 +200,6 @@ func (s *inventoryService) Reserve(
 			break
 		}
 	}
-
 
 	if err != nil {
 		return dto.ReservationResponse{}, err
@@ -184,6 +212,7 @@ func (s *inventoryService) Reserve(
 }
 
 func (s *inventoryService) Release(
+	ctx context.Context,
 	reservationID uuid.UUID,
 ) (dto.ReservationResponse, error) {
 
@@ -194,6 +223,10 @@ func (s *inventoryService) Release(
 		reservationRepo := repository.NewReservationRepository(tx)
 
 		inventoryRepo := repository.NewInventoryRepository(tx)
+
+		outboxRepo := repository.NewOutboxRepository(tx)
+
+		publisher := outbox.NewOutboxPublisher(outboxRepo)
 
 		var err error
 
@@ -234,6 +267,22 @@ func (s *inventoryService) Release(
 			return err
 		}
 
+		evt, err := event.BuildInventoryReleasedEvent(
+			reservation,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		if err := publisher.Publish(
+			ctx,
+			kafkaa.InventoryEvents,
+			reservation.ID.String(),
+			evt,
+		); err != nil {
+			return err
+		}
 		return nil
 	})
 
@@ -307,7 +356,6 @@ func (s *inventoryService) Confirm(
 	return mapper.ToReservationResponse(reservation), nil
 }
 
-
 func (s *inventoryService) GetExpiredReservations() (
 	[]model.Reservation,
 	error,
@@ -373,4 +421,103 @@ func (s *inventoryService) ExpireReservation(
 
 		return nil
 	})
+}
+
+func (s *inventoryService) ReserveInventory(
+	ctx context.Context,
+	request sagaevent.ReserveInventoryPayload,
+) error {
+
+	for _, item := range request.Items {
+
+		_, err := s.Reserve(ctx,
+
+			dto.CreateReservationRequest{
+
+				OrderID: request.OrderID,
+
+				ProductID: item.ProductID,
+
+				Quantity: item.Quantity,
+			},
+		)
+
+		if err != nil {
+
+			log.Println("Inventory reservation failed")
+
+			evt, buildErr := event.BuildInventoryReservationFailedEvent(
+
+				request.OrderID.String(),
+
+				item.ProductID.String(),
+
+				item.Quantity,
+
+				err.Error(),
+			)
+
+			if buildErr != nil {
+				return buildErr
+			}
+			outboxRepo := repository.NewOutboxRepository(database.DB)
+
+			publisher := outbox.NewOutboxPublisher(outboxRepo)
+
+			if err := publisher.Publish(
+
+				ctx,
+
+				kafkaa.InventoryEvents,
+
+				request.OrderID.String(),
+
+				evt,
+			); err != nil {
+
+				return err
+			}
+
+			log.Println("Published INVENTORY_RESERVATION_FAILED")
+
+			return nil
+		}
+	}
+	return nil
+}
+
+
+func (s *inventoryService) ReleaseInventory(
+
+	ctx context.Context,
+
+	request sagaevent.ReleaseInventoryPayload,
+
+) error {
+
+	log.Println("Releasing inventory...")
+
+	reservations, err := s.reservationRepository.FindByOrderIDD(
+		request.OrderID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	for _, reservation := range reservations {
+
+		_, err := s.Release(
+			ctx,
+			reservation.ID,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Println("Inventory released")
+
+	return nil
 }

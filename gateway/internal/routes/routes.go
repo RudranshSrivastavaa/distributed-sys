@@ -40,4 +40,6 @@ func Register(app *fiber.App) {
 
 	app.All("/notifications/*", proxy.Forward("http://localhost:8084"))
 
+	app.All("/sagas/*", proxy.Forward("http://localhost:8086"))
+
 }

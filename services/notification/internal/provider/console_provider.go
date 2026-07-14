@@ -2,8 +2,10 @@ package provider
 
 import (
 	//"fmt"
+	"fmt"
 	"math/rand"
 	"time"
+
 	"github.com/rudransh/distributed-commerce/notification/internal/errors"
 	"github.com/rudransh/distributed-commerce/notification/internal/model"
 	"github.com/rudransh/distributed-commerce/pkg/retry"
@@ -48,24 +50,24 @@ func (p *ConsoleEmailProvider) Send(
     notification *model.Notification,
 ) error {
 
-    // p.simulateLatency()
+    p.simulateLatency()
 
-    // fmt.Println("====================================")
-    // fmt.Printf("To      : %s\n", notification.Recipient)
-    // fmt.Printf("Subject : %s\n", notification.Subject)
-    // fmt.Println("------------------------------------")
-    // fmt.Println(notification.Body)
-    // fmt.Println("------------------------------------")
+    fmt.Println("====================================")
+    fmt.Printf("To      : %s\n", notification.Recipient)
+    fmt.Printf("Subject : %s\n", notification.Subject)
+    fmt.Println("------------------------------------")
+    fmt.Println(notification.Body)
+    fmt.Println("------------------------------------")
 
-    // if !p.shouldSucceed() {
+    if !p.shouldSucceed() {
 
         return retry.NewRetryable(
             errors.ErrTemporaryFailure,
         )
-    // }
+    }
 
-    // fmt.Println("Email Sent Successfully")
-    // fmt.Println("====================================")
+    fmt.Println("Email Sent Successfully")
+    fmt.Println("====================================")
 
-    // return nil
+    return nil
 }

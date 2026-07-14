@@ -7,7 +7,7 @@ import (
 )
 
 type CreatePaymentRequest struct {
-	OrderID uuid.UUID `json:"orderId"`
+	OrderID uuid.UUID `json:"order_id"`
 
 	Amount float64 `json:"amount"`
 

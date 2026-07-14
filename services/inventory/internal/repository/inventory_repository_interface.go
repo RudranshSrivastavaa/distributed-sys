@@ -15,4 +15,5 @@ type InventoryRepository interface {
 	Update(inventory *model.Inventory) error
 
 	UpdateWithVersion(inventory *model.Inventory) error
+
 }

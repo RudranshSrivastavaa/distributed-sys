@@ -3,7 +3,7 @@ package dto
 import "github.com/google/uuid"
 
 type InventoryResponse struct {
-	ProductID uuid.UUID `json:"productId"`
+	ProductID uuid.UUID `json:"product_id"`
 
 	AvailableQuantity int64 `json:"availableQuantity"`
 

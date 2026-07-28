@@ -15,30 +15,20 @@ type Executor struct {
 func (r *Executor) Config() *Config {
 	return &Config{
 		MaxAttempts: 3,
-
 		InitialDelay: time.Second,
-
 		MaxDelay: 10 * time.Second,
-
 		Multiplier: 3,
-
 		Jitter: true,
 	}
 }
 
-func NewExecutor(
-	config Config,
-) *Executor {
-
+func NewExecutor(config Config) *Executor {
 	return &Executor{
 		config: config,
 	}
-
 }
 
-func (r *Executor) Do(
-	fn func() error,
-) error {
+func (r *Executor) Do(fn func() error) error {
 
 	var err error
 
@@ -79,20 +69,11 @@ func (r *Executor) Do(
 			delay = ApplyJitter(delay)
 		}
 
-		log.Printf(
-			"retry attempt %d failed: %v sleeping for %v",
-			attempt,
-			err,
-			delay,
-		)
+		log.Printf("retry attempt %d failed: %v sleeping for %v",attempt,err,delay)
 
 		time.Sleep(delay)
 
-		delay = NextDelay(
-			delay,
-			r.config,
-		)
-
+		delay = NextDelay(delay,r.config)
 	}
 
 	return err

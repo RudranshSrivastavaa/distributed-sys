@@ -13,9 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *paymentService) CreatePayment(
-	ctx context.Context,
-	request dto.CreatePaymentRequest,
+func (s *paymentService) CreatePayment(ctx context.Context,request dto.CreatePaymentRequest,
 ) (dto.PaymentResponse, error) {
 
 	//----------------------------------------------------
@@ -30,10 +28,8 @@ func (s *paymentService) CreatePayment(
 	// Money
 	//----------------------------------------------------
 
-	money, err := model.NewMoney(
-		request.Amount,
-		request.Currency,
-	)
+	money, err := model.NewMoney(request.Amount,request.Currency)
+
 	if err != nil {
 		return dto.PaymentResponse{}, err
 	}
@@ -133,9 +129,5 @@ func (s *paymentService) CreatePayment(
 	// Response
 	//----------------------------------------------------
 
-	return s.toPaymentResponse(
-		payment,
-		nil,
-		intent.PaymentURL,
-	), nil
+	return s.toPaymentResponse(payment,nil,intent.PaymentURL), nil
 }

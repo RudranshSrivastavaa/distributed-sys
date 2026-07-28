@@ -16,9 +16,7 @@ import (
 	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
 )
 
-func (s *paymentService) HandleWebhook(
-	event provider.WebhookEvent,
-) error {
+func (s *paymentService) HandleWebhook(event provider.WebhookEvent) error {
 
 	log.Println("========== WEBHOOK RECEIVED ==========")
 	log.Printf("EventID: %s", event.EventID)
@@ -42,24 +40,18 @@ func (s *paymentService) HandleWebhook(
 			// Duplicate webhook?
 			//----------------------------------------------------
 
-			duplicate, err := s.isDuplicateWebhook(
-				webhookRepo,
-				event.EventID,
-			)
+			duplicate, err := s.isDuplicateWebhook(webhookRepo,event.EventID)
 
 			if err != nil {
 				return err
 			}
 
 			if duplicate {
-				log.Printf(
-					"duplicate webhook ignored: %s",
-					event.EventID,
-				)
+				log.Printf("duplicate webhook ignored: %s",event.EventID)
 				return nil
 			}
 
-			log.Println("1. Duplicate check")
+			log.Println("1. Duplicate checked")
 
 			//----------------------------------------------------
 			// Save webhook
@@ -82,9 +74,7 @@ func (s *paymentService) HandleWebhook(
 			// Find payment
 			//----------------------------------------------------
 
-			payment, err := paymentRepo.FindByProviderReference(
-				event.ProviderReference,
-			)
+			payment, err := paymentRepo.FindByProviderReference(event.ProviderReference)
 
 			if err != nil {
 				return err
@@ -97,12 +87,7 @@ func (s *paymentService) HandleWebhook(
 			//----------------------------------------------------
 
 			if payment.Status == event.Status {
-
-				log.Printf(
-					"duplicate webhook ignored: %s",
-					event.EventID,
-				)
-
+				log.Printf("duplicate webhook ignored: %s",event.EventID)
 				return nil
 			}
 
@@ -110,10 +95,7 @@ func (s *paymentService) HandleWebhook(
 			// Transition
 			//----------------------------------------------------
 
-			if err := state.Transition(
-				payment,
-				event.Status,
-			); err != nil {
+			if err := state.Transition(payment,event.Status); err != nil {
 				return err
 			}
 
@@ -123,11 +105,7 @@ func (s *paymentService) HandleWebhook(
 			// Create Attempt
 			//----------------------------------------------------
 
-			attempt, err := s.createAttempt(
-				attemptRepo,
-				payment,
-				event,
-			)
+			attempt, err := s.createAttempt(attemptRepo,payment,event)
 
 			if err != nil {
 				return err
@@ -137,7 +115,7 @@ func (s *paymentService) HandleWebhook(
 				return err
 			}
 
-			log.Println("5. Create attempt")
+			log.Println("5. Create attempt done")
 
 			//----------------------------------------------------
 			// Update Payment
@@ -157,9 +135,7 @@ func (s *paymentService) HandleWebhook(
 
 			case model.StatusSuccess:
 
-				evt, err = paymentevent.BuildPaymentCompletedEvent(
-					payment,
-				)
+				evt, err = paymentevent.BuildPaymentCompletedEvent(payment)
 
 				if err != nil {
 					return err
@@ -167,9 +143,7 @@ func (s *paymentService) HandleWebhook(
 
 			case model.StatusFailed:
 
-				evt, err = paymentevent.BuildPaymentFailedEvent(
-					payment,
-				)
+				evt, err = paymentevent.BuildPaymentFailedEvent(payment)
 
 				if err != nil {
 					return err

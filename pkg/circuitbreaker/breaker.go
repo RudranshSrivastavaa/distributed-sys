@@ -8,24 +8,17 @@ import (
 
 type Breaker struct {
 	mu sync.Mutex
-
 	state State
-
 	config Config
-
 	failures int
-
 	successes int
-
 	lastFailure time.Time
 }
 
 func New(config Config) *Breaker {
 
 	return &Breaker{
-
 		state: StateClosed,
-
 		config: config,
 	}
 
@@ -100,7 +93,6 @@ func (b *Breaker) recordFailure() {
 
 		if b.failures >= b.config.FailureThreshold {
 			log.Println("[CircuitBreaker] CLOSED -> OPEN")
-
 			b.transition(StateOpen)
 		}
 
@@ -111,9 +103,7 @@ func (b *Breaker) recordFailure() {
 	}
 }
 
-func (b *Breaker) Execute(
-	fn func() error,
-) error {
+func (b *Breaker) Execute(fn func() error) error {
 
 	if !b.shouldAllow() {
 		return ErrCircuitOpen

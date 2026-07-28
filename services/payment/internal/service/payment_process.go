@@ -11,9 +11,7 @@ import (
 	sagaevent "github.com/rudransh/distributed-commerce/saga/event"
 )
 
-func (s *paymentService) ProcessPayment(
-	paymentID uuid.UUID,
-	request dto.ProcessPaymentRequest,
+func (s *paymentService) ProcessPayment(paymentID uuid.UUID,request dto.ProcessPaymentRequest,
 ) (dto.PaymentResponse, error) {
 
 	payment, err := s.paymentRepository.FindByID(paymentID)
@@ -22,8 +20,7 @@ func (s *paymentService) ProcessPayment(
 	}
 
 	if payment.Status.IsFinal() {
-		return dto.PaymentResponse{},
-			errors.New("payment already completed")
+		return dto.PaymentResponse{} , errors.New("payment already completed")
 	}
 
 	err = s.breaker.Execute(func() error {
@@ -32,10 +29,7 @@ func (s *paymentService) ProcessPayment(
 
 			var err error
 
-			_, err = s.gateway.Capture(
-				payment,
-				request,
-			)
+			_, err = s.gateway.Capture(payment,request)
 
 			return err
 		})

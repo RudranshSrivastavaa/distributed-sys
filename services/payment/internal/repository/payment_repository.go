@@ -20,23 +20,17 @@ func NewPaymentRepository(
 	}
 }
 
-func (r *paymentRepository) Create(
-	payment *model.Payment,
-) error {
+func (r *paymentRepository) Create(payment *model.Payment) error {
 
 	return r.db.Create(payment).Error
 
 }
 
-func (r *paymentRepository) FindByID(
-	id uuid.UUID,
-) (*model.Payment, error) {
+func (r *paymentRepository) FindByID(id uuid.UUID) (*model.Payment, error) {
 
 	var payment model.Payment
 
-	err := r.db.
-		First(&payment, "id = ?", id).
-		Error
+	err := r.db.First(&payment, "id = ?", id).Error
 
 	if err != nil {
 		return nil, err
@@ -46,16 +40,11 @@ func (r *paymentRepository) FindByID(
 
 }
 
-func (r *paymentRepository) FindByOrderID(
-	orderID uuid.UUID,
-) (*model.Payment, error) {
+func (r *paymentRepository) FindByOrderID(orderID uuid.UUID) (*model.Payment, error) {
 
 	var payment model.Payment
 
-	err := r.db.
-		Where("order_id = ?", orderID).
-		First(&payment).
-		Error
+	err := r.db.Where("order_id = ?", orderID).First(&payment).Error
 
 	if err != nil {
 		return nil, err
@@ -65,27 +54,18 @@ func (r *paymentRepository) FindByOrderID(
 
 }
 
-func (r *paymentRepository) Update(
-	payment *model.Payment,
-) error {
+func (r *paymentRepository) Update(payment *model.Payment) error {
 
 	return r.db.Save(payment).Error
 
 }
 
-func (r *paymentRepository) FindByProviderReference(
-	reference string,
-) (*model.Payment, error) {
+func (r *paymentRepository) FindByProviderReference(reference string) (*model.Payment, error) {
 
 	var payment model.Payment
 
 	err := r.db.
-		Where(
-			"provider_reference = ?",
-			reference,
-		).
-		First(&payment).
-		Error
+		Where("provider_reference = ?",reference).First(&payment).Error
 
 	if err != nil {
 		return nil, err

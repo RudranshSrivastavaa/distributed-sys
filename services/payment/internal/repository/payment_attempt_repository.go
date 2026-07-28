@@ -46,17 +46,12 @@ func (r *paymentAttemptRepository) FindByPaymentID(paymentID uuid.UUID) ([]model
 
 }
 
-func (r *paymentAttemptRepository) GetLatestAttempt(
-	paymentID uuid.UUID,
-) (*model.PaymentAttempt, error) {
+func (r *paymentAttemptRepository) GetLatestAttempt(paymentID uuid.UUID) (*model.PaymentAttempt, error) {
 
 	var attempt model.PaymentAttempt
 
 	err := r.db.
-		Where(
-			"payment_id = ?",
-			paymentID,
-		).
+		Where("payment_id = ?",paymentID).
 		Order("attempt_number DESC").
 		First(&attempt).
 		Error

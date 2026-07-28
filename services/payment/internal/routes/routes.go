@@ -13,28 +13,14 @@ func Register(
 
     payments := app.Group("/payments")
 
-	payments.Post(
-		"/",
-		handler.CreatePayment,
-	)
+	payments.Post("/",handler.CreatePayment)
 
-	payments.Post(
-		"/:id/process",
-		handler.ProcessPayment,
-	)
+	payments.Post("/:id/process",handler.ProcessPayment)
 
-	payments.Get(
-		"/:id",
-		handler.GetPayment,
-	)
+	payments.Get("/:id",handler.GetPayment)
 
-	payments.Get(
-		"/order/:orderId",
-		handler.GetPaymentByOrderID,
-	)
+	payments.Get("/order/:orderId",handler.GetPaymentByOrderID)
 	
-	payments.Post(
-	"/webhook",
-	handler.HandleWebhook,
-)
+	payments.Post("/webhook",handler.HandleWebhook)
+	
 }

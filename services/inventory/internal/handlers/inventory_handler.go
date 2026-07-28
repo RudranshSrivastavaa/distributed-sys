@@ -9,9 +9,7 @@ import (
 
 
 
-func (h *InventoryHandler) AddStock(
-	c *fiber.Ctx,
-) error {
+func (h *InventoryHandler) AddStock(c *fiber.Ctx) error {
 
 	productID, err := uuid.Parse(
 		c.Params("productId"),
@@ -28,14 +26,9 @@ func (h *InventoryHandler) AddStock(
 
 	var request dto.AddStockRequest
 
-	if err := c.BodyParser(
-		&request,
-	); err != nil {
+	if err := c.BodyParser(&request); err != nil {
 
-		return response.BadRequest(
-			c,
-			"invalid request body",
-		)
+		return response.BadRequest(c,"invalid request body")
 
 	}
 
@@ -45,12 +38,7 @@ func (h *InventoryHandler) AddStock(
 	)
 
 	if err != nil {
-
-		return response.BadRequest(
-			c,
-			err.Error(),
-		)
-
+		return response.BadRequest(c,err.Error())
 	}
 
 	return response.Success(

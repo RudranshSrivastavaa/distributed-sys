@@ -5,11 +5,8 @@ import (
 	"github.com/rudransh/distributed-commerce/payment/internal/model"
 )
 
-func (s *paymentService) toPaymentResponse(
-	payment *model.Payment,
-	attempts []model.PaymentAttempt,
-	paymentURL string,
-) dto.PaymentResponse {
+func (s *paymentService) toPaymentResponse(payment *model.Payment,attempts []model.PaymentAttempt,
+	paymentURL string) dto.PaymentResponse {
 
 	response := dto.PaymentResponse{
 		ID:                payment.ID,

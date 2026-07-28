@@ -5,9 +5,7 @@ import (
 	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
 )
 
-func BuildOrderCreatedEvent(
-	order *model.Order,
-) (kafkaa.Event, error) {
+func BuildOrderCreatedEvent(order *model.Order) (kafkaa.Event, error) {
 
 	payload := order.CreatedEvent()
 

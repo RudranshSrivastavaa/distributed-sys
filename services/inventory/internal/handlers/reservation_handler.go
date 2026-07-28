@@ -12,9 +12,7 @@ import (
 	"github.com/rudransh/distributed-commerce/pkg/http/response"
 )
 
-func (h *InventoryHandler) Reserve(
-	c *fiber.Ctx,
-) error {
+func (h *InventoryHandler) Reserve(c *fiber.Ctx) error {
 
 	var request dto.CreateReservationRequest
 
@@ -26,9 +24,9 @@ func (h *InventoryHandler) Reserve(
 		)
 
 	}
-log.Printf("%+v\n", request)
+	log.Printf("%+v\n", request)
 	reservation, err := h.service.Reserve(
-		context.Background(),request,
+		context.Background(), request,
 	)
 
 	if err != nil {
@@ -58,7 +56,7 @@ func (h *InventoryHandler) Release(
 		return response.BadRequest(c, "invalid reservation id")
 	}
 
-	reservation, err := h.service.Release(context.Background(),id)
+	reservation, err := h.service.Release(context.Background(), id)
 
 	if err != nil {
 		return response.BadRequest(c, err.Error())

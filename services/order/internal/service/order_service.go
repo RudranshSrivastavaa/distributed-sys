@@ -147,9 +147,7 @@ func (s *orderService) GetAll() ([]dto.OrderResponse, error) {
 
 }
 
-func (s *orderService) GetByID(
-	id uuid.UUID,
-) (dto.OrderResponse, error) {
+func (s *orderService) GetByID(id uuid.UUID) (dto.OrderResponse, error) {
 
 	order, err := s.repository.FindByID(id)
 
@@ -161,10 +159,7 @@ func (s *orderService) GetByID(
 
 }
 
-func (s *orderService) Update(
-	id uuid.UUID,
-	request dto.UpdateOrderRequest,
-) (dto.OrderResponse, error) {
+func (s *orderService) Update(id uuid.UUID,request dto.UpdateOrderRequest) (dto.OrderResponse, error) {
 
 	order, err := s.repository.FindByID(id)
 	if err != nil {
@@ -185,9 +180,7 @@ func (s *orderService) Update(
 
 	return mapper.ToOrderResponse(order), nil
 }
-func (s *orderService) Delete(
-	id uuid.UUID,
-) error {
+func (s *orderService) Delete(id uuid.UUID) error {
 
 	order, err := s.repository.FindByID(id)
 	if err != nil {
@@ -201,10 +194,7 @@ func (s *orderService) Delete(
 	return s.repository.Delete(id)
 }
 
-func (s *orderService) UpdateStatus(
-	id uuid.UUID,
-	request dto.UpdateOrderStatusRequest,
-) (dto.OrderResponse, error) {
+func (s *orderService) UpdateStatus(id uuid.UUID,request dto.UpdateOrderStatusRequest) (dto.OrderResponse, error) {
 
 	order, err := s.repository.FindByID(id)
 

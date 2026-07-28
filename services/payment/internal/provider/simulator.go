@@ -27,13 +27,10 @@ type SimulatorGateway struct {
 func NewSimulatorGateway(config SimulatorConfig,webhookURL string) *SimulatorGateway {
 
 	return &SimulatorGateway{
-
 		Config: config,
-
 		Client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-
 		WebhookURL: webhookURL,
 	}
 }
@@ -143,15 +140,10 @@ func (s *SimulatorGateway) sendWebhook(providerReference string ,status string,)
 	//----------------------------------------
 
 	request := dto.WebhookRequest{
-
 		EventID: payload.EventID,
-
 		Provider: payload.Provider,
-
 		ProviderReference: payload.ProviderReference,
-
 		Status: payload.Status,
-
 		Signature: signature,
 	}
 

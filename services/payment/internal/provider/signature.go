@@ -12,8 +12,6 @@ func GenerateSignature(payload []byte,secret string) string {
 
 	h.Write(payload)
 
-	return hex.EncodeToString(
-		h.Sum(nil),
-	)
+	return hex.EncodeToString(h.Sum(nil))
 
 }

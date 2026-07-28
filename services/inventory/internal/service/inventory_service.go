@@ -118,9 +118,7 @@ func (s *inventoryService) AddStock(productID uuid.UUID, request dto.AddStockReq
 
 }
 
-func (s *inventoryService) Reserve(ctx context.Context,
-	request dto.CreateReservationRequest,
-) (dto.ReservationResponse, error) {
+func (s *inventoryService) Reserve(ctx context.Context,request dto.CreateReservationRequest) (dto.ReservationResponse, error) {
 
 	if request.Quantity <= 0 {
 		return dto.ReservationResponse{},
@@ -211,10 +209,7 @@ func (s *inventoryService) Reserve(ctx context.Context,
 
 }
 
-func (s *inventoryService) Release(
-	ctx context.Context,
-	reservationID uuid.UUID,
-) (dto.ReservationResponse, error) {
+func (s *inventoryService) Release(ctx context.Context,reservationID uuid.UUID) (dto.ReservationResponse, error) {
 
 	var reservation *model.Reservation
 
@@ -293,9 +288,7 @@ func (s *inventoryService) Release(
 	return mapper.ToReservationResponse(reservation), nil
 }
 
-func (s *inventoryService) Confirm(
-	reservationID uuid.UUID,
-) (dto.ReservationResponse, error) {
+func (s *inventoryService) Confirm(reservationID uuid.UUID) (dto.ReservationResponse, error) {
 
 	var reservation *model.Reservation
 
@@ -356,10 +349,7 @@ func (s *inventoryService) Confirm(
 	return mapper.ToReservationResponse(reservation), nil
 }
 
-func (s *inventoryService) GetExpiredReservations() (
-	[]model.Reservation,
-	error,
-) {
+func (s *inventoryService) GetExpiredReservations() ([]model.Reservation,error) {
 
 	return s.reservationRepository.
 		FindExpiredReservations(

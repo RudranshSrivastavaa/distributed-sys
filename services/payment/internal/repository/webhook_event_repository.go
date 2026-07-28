@@ -19,20 +19,11 @@ func NewWebhookEventRepository(
 
 }
 
-func (r *webhookEventRepository) Exists(
-	eventID string,
-) (bool, error) {
+func (r *webhookEventRepository) Exists(eventID string) (bool, error) {
 
 	var count int64
 
-	err := r.db.
-		Model(&model.WebhookEvent{}).
-		Where(
-			"event_id = ?",
-			eventID,
-		).
-		Count(&count).
-		Error
+	err := r.db.Model(&model.WebhookEvent{}).Where("event_id = ?",eventID).Count(&count).Error
 
 	if err != nil {
 		return false, err
@@ -41,9 +32,7 @@ func (r *webhookEventRepository) Exists(
 	return count > 0, nil
 }
 
-func (r *webhookEventRepository) Create(
-	event *model.WebhookEvent,
-) error {
+func (r *webhookEventRepository) Create(event *model.WebhookEvent) error {
 
 	return r.db.Create(event).Error
 }

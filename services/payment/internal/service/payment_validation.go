@@ -7,9 +7,7 @@ import (
 	"github.com/rudransh/distributed-commerce/payment/internal/dto"
 )
 
-func (s *paymentService) validateCreatePayment(
-	request dto.CreatePaymentRequest,
-) error {
+func (s *paymentService) validateCreatePayment(request dto.CreatePaymentRequest) error {
 
 	if request.OrderID == uuid.Nil {
 		return errors.New("order id is required")

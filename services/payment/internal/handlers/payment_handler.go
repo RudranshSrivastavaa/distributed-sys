@@ -33,153 +33,85 @@ func NewPaymentHandler(
 
 func (h *PaymentHandler) GetPayment(c *fiber.Ctx) error {
 
-	id, err := uuid.Parse(
-		c.Params("id"),
-	)
+	id, err := uuid.Parse(c.Params("id"))
 
 	if err != nil {
-		return response.BadRequest(
-			c,
-			"invalid payment id",
-		)
+		return response.BadRequest(c,"invalid payment id")
 	}
 
-	payment, err := h.service.GetPayment(
-		id,
-	)
+	payment, err := h.service.GetPayment(id)
 
 	if err != nil {
-		return response.NotFound(
-			c,
-			err.Error(),
-		)
+		return response.NotFound(c,err.Error())
 	}
 
-	return response.Success(
-		c,
-		"Payment fetched successfully",
-		payment,
-	)
+	return response.Success(c,"Payment fetched successfully",payment)
 }
+
 
 func (h *PaymentHandler) GetPaymentByOrderID(c *fiber.Ctx) error {
 
-	orderID, err := uuid.Parse(
-		c.Params("orderId"),
-	)
+	orderID, err := uuid.Parse(c.Params("orderId"))
 
 	if err != nil {
-		return response.BadRequest(
-			c,
-			"invalid order id",
-		)
+		return response.BadRequest(c,"invalid order id")
 	}
 
-	payment, err := h.service.GetPaymentByOrderID(
-		orderID,
-	)
+	payment, err := h.service.GetPaymentByOrderID(orderID)
 
 	if err != nil {
-		return response.NotFound(
-			c,
-			err.Error(),
-		)
+		return response.NotFound(c,err.Error())
 	}
 
-	return response.Success(
-		c,
-		"Payment fetched successfully",
-		payment,
-	)
+	return response.Success(c,"Payment fetched successfully",payment)
 }
 
-func (h *PaymentHandler) CreatePayment(
-	c *fiber.Ctx,
-) error {
+
+func (h *PaymentHandler) CreatePayment(c *fiber.Ctx) error {
 
 	var request dto.CreatePaymentRequest
 
 	if err := c.BodyParser(&request); err != nil {
-
-		return response.BadRequest(
-			c,
-			"invalid request body",
-		)
-
+		return response.BadRequest(c,"invalid request body")
 	}
 
 	payment, err := h.service.CreatePayment(context.Background(),request)
 
 	if err != nil {
-
-		return response.BadRequest(
-			c,
-			err.Error(),
-		)
-
+		return response.BadRequest(c,err.Error())
 	}
 
-	return response.Created(
-		c,
-		"Payment created successfully",
-		payment,
-	)
+	return response.Created(c,"Payment created successfully",payment)
 
 }
 
-func (h *PaymentHandler) ProcessPayment(
-	c *fiber.Ctx,
-) error {
+func (h *PaymentHandler) ProcessPayment(c *fiber.Ctx) error {
 
-	id, err := uuid.Parse(
-		c.Params("id"),
-	)
+	id, err := uuid.Parse(c.Params("id"))
 
 	if err != nil {
-
-		return response.BadRequest(
-			c,
-			"invalid payment id",
-		)
-
+		return response.BadRequest(c,"invalid payment id")
 	}
 
 	var request dto.ProcessPaymentRequest
 
 	if err := c.BodyParser(&request); err != nil {
 
-		return response.BadRequest(
-			c,
-			"invalid request body",
-		)
+		return response.BadRequest(c,"invalid request body")
 
 	}
 
-	payment, err := h.service.ProcessPayment(
-		id,
-		request,
-	)
+	payment, err := h.service.ProcessPayment(id,request)
 
 	if err != nil {
-
-		return response.BadRequest(
-			c,
-			err.Error(),
-		)
-
+		return response.BadRequest(c,err.Error())
 	}
 
-	return response.Success(
-		c,
-		"Payment processed successfully",
-		payment,
-	)
+	return response.Success(c,"Payment processed successfully",payment)
 
 }
 
-func (h *PaymentHandler) HandleWebhook(
-	c *fiber.Ctx,
-) error {
+func (h *PaymentHandler) HandleWebhook(c *fiber.Ctx) error {
 	log.Println("1. Webhook request received")
 	rawBody := c.Body()
 
@@ -187,21 +119,15 @@ func (h *PaymentHandler) HandleWebhook(
 
 	if err := json.Unmarshal(rawBody, &request); err != nil {
 		log.Println("2. JSON Unmarshal failed:", err)
-		return response.BadRequest(
-			c,
-			"invalid webhook payload",
-		)
-
+		return response.BadRequest(c,"invalid webhook payload")
 	}
+
 	log.Println("3. JSON parsed")
 	event, err := mapper.ToWebhookEvent(request)
 
 	if err != nil {
 		log.Println("4. Mapper failed:", err)
-		return response.BadRequest(
-			c,
-			err.Error(),
-		)
+		return response.BadRequest(c,err.Error())
 
 	}
 	log.Println("5. Event mapped")

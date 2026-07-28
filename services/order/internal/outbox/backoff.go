@@ -2,11 +2,8 @@ package outbox
 
 import "time"
 
-func CalculateNextRetry(
+func CalculateNextRetry(retryCount int) time.Time {
 
-	retryCount int,
-
-) time.Time {
 	const MaxRetryDelay = 5 * time.Minute
 
 	delay := time.Second << retryCount
@@ -16,4 +13,5 @@ func CalculateNextRetry(
     }
 
 	return time.Now().UTC().Add(delay)
+	
 }

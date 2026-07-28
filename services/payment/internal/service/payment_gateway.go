@@ -7,7 +7,5 @@ import (
 
 func (s *paymentService) createIntent(payment *model.Payment) (*provider.CreateIntentResult, error) {
 
-	return s.gateway.CreateIntent(
-		payment,
-	)
+	return s.gateway.CreateIntent(payment)
 }

@@ -23,21 +23,13 @@ func (v *Verifier) Verify(
 	signature string,
 ) bool {
 
-	expected := provider.GenerateSignature(
-		body,
-		v.secret,
-	)
+	expected := provider.GenerateSignature(body,v.secret)
 
-	return hmac.Equal(
-		[]byte(signature),
-		[]byte(expected),
-	)
+	return hmac.Equal([]byte(signature),[]byte(expected))
 
 }
 
-func PayloadForVerification(
-	request dto.WebhookRequest,
-) ([]byte, error) {
+func PayloadForVerification(request dto.WebhookRequest) ([]byte, error) {
 
 	payload := struct {
 		EventID string `json:"eventId"`

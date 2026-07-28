@@ -23,15 +23,11 @@ func (r *productRepository) Create(product *model.Product) error {
 
 }
 
-func (r *productRepository) FindByID(
-	id uuid.UUID,
-) (*model.Product, error) {
+func (r *productRepository) FindByID(id uuid.UUID) (*model.Product, error) {
 
 	var product model.Product
 
-	err := r.db.
-		First(&product, "id = ?", id).
-		Error
+	err := r.db.First(&product, "id = ?", id).Error
 
 	if err != nil {
 		return nil, err
@@ -41,16 +37,11 @@ func (r *productRepository) FindByID(
 
 }
 
-func (r *productRepository) FindBySKU(
-	sku string,
-) (*model.Product, error) {
+func (r *productRepository) FindBySKU(sku string) (*model.Product, error) {
 
 	var product model.Product
 
-	err := r.db.
-		Where("sku = ?", sku).
-		First(&product).
-		Error
+	err := r.db.Where("sku = ?", sku).First(&product).Error
 
 	if err != nil {
 		return nil, err
@@ -74,22 +65,14 @@ func (r *productRepository) FindAll() ([]model.Product, error) {
 
 }
 
-func (r *productRepository) Update(
-	product *model.Product,
-) error {
+func (r *productRepository) Update(product *model.Product) error {
 
 	return r.db.Save(product).Error
 
 }
 
-func (r *productRepository) Delete(
-	id uuid.UUID,
-) error {
+func (r *productRepository) Delete(id uuid.UUID) error {
 
-	return r.db.Delete(
-		&model.Product{},
-		"id = ?",
-		id,
-	).Error
+	return r.db.Delete(&model.Product{},"id = ?",id).Error
 
 }

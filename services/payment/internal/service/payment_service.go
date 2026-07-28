@@ -15,30 +15,20 @@ import (
 
 type PaymentService interface {
 
-    CreatePayment(ctx context.Context, 
-		request dto.CreatePaymentRequest) (dto.PaymentResponse, error)
+    CreatePayment(ctx context.Context,request dto.CreatePaymentRequest) (dto.PaymentResponse, error)
 
-	ProcessPayment(
-		paymentID uuid.UUID,
-		request dto.ProcessPaymentRequest,
-	) (dto.PaymentResponse, error)
+	ProcessPayment(paymentID uuid.UUID,request dto.ProcessPaymentRequest) (dto.PaymentResponse, error)
 
 	HandleProcessPaymentCommand(
 	ctx context.Context,
 	request sagaevent.ProcessPaymentPayload,
 ) error
 
-	GetPayment(
-		id uuid.UUID,
-	) (dto.PaymentResponse, error)
+	GetPayment(id uuid.UUID) (dto.PaymentResponse, error)
 
-	GetPaymentByOrderID(
-		orderID uuid.UUID,
-	) (dto.PaymentResponse, error)
+	GetPaymentByOrderID(orderID uuid.UUID) (dto.PaymentResponse, error)
 
-	HandleWebhook(
-	event provider.WebhookEvent,
-) error
+	HandleWebhook(event provider.WebhookEvent) error
 }
 
 type paymentService struct {

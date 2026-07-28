@@ -5,9 +5,7 @@ import (
 	"github.com/rudransh/distributed-commerce/pkg/kafkaa"
 )
 
-func BuildPaymentCreatedEvent(
-	payment *model.Payment,
-) (kafkaa.Event, error) {
+func BuildPaymentCreatedEvent(payment *model.Payment) (kafkaa.Event, error) {
 
 	payload := payment.CreatedEvent()
 
@@ -18,6 +16,7 @@ func BuildPaymentCreatedEvent(
 		string(kafkaa.PaymentAggregate),
 
 		payment.ID.String(),
+		
 		kafkaa.PaymentServiceSource,
 
 		payload,

@@ -6,12 +6,7 @@ import (
 )
 
 type PaymentGateway interface {
-	CreateIntent(
-		payment *model.Payment,
-	) (*CreateIntentResult, error)
+	CreateIntent(payment *model.Payment) (*CreateIntentResult, error)
 
-	Capture(
-		payment *model.Payment,
-		request dto.ProcessPaymentRequest,
-	) (*PaymentResult, error)
+	Capture(payment *model.Payment,request dto.ProcessPaymentRequest) (*PaymentResult, error)
 }

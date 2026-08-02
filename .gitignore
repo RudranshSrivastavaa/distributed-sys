@@ -29,3 +29,5 @@ coverage.out
 
 # Go workspace
 go.work.sum
+
+certs/

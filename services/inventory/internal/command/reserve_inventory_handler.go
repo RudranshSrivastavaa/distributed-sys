@@ -22,14 +22,9 @@ func NewReserveInventoryHandler(
 	}
 }
 
-func (h *ReserveInventoryHandler) Handle(
-	ctx context.Context,
-	metadata kafkaa.Metadata,
-	payload sagaevent.ReserveInventoryPayload,
+func (h *ReserveInventoryHandler) Handle(ctx context.Context,metadata kafkaa.Metadata,payload sagaevent.ReserveInventoryPayload,
 ) error {
 
-	return h.service.ReserveInventory(
-		ctx,
-		payload,
-	)
+	return h.service.ReserveInventory(ctx,payload)
+	
 }

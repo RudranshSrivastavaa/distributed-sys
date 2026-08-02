@@ -79,6 +79,10 @@ func Start() {
 
 	cfg := kafkaa.DefaultConfig()
 
+	cfg.TLS.Enabled = true
+
+	cfg.TLS.CAFile = "../../certs/ca/ca.crt"
+
 	cfg.Consumer.GroupID = "notification-group"
 
 	client := kafkaa.NewClient(cfg)
@@ -92,9 +96,7 @@ func Start() {
 	dispatcher.Register(
 		kafkaa.OrderCreated,
 		kafkaa.WrapHandler(
-			event.NewOrderCreatedHandler(
-				notificationService,
-			),
+			event.NewOrderCreatedHandler(notificationService),
 		),
 	)
 

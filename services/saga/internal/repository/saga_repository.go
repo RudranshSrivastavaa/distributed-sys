@@ -6,15 +6,9 @@ import (
 
 type SagaRepository interface {
 
-	Create(
-		saga *model.Saga,
-	) error
+	Create(saga *model.Saga) error
 
-	FindByOrderID(
-		orderID string,
-	) (*model.Saga, error)
+	FindByOrderID(orderID string) (*model.Saga, error)
 
-	Update(
-		saga *model.Saga,
-	) error
+	Update(saga *model.Saga) error
 }

@@ -9,33 +9,17 @@ import (
 )
 
 type SagaService interface {
-	StartSaga(
-		ctx context.Context,
-		payload orderevents.OrderCreatedPayload,
-	) error
+	StartSaga(ctx context.Context,payload orderevents.OrderCreatedPayload) error
 
-	HandleInventoryReserved(
-		ctx context.Context,
-		payload inventoryevents.InventoryReservedPayload,
-	) error
+	HandleInventoryReserved(ctx context.Context,payload inventoryevents.InventoryReservedPayload) error
 
-	HandleInventoryReservationFailed(
-		ctx context.Context,
+	HandleInventoryReservationFailed(ctx context.Context,
 		payload inventoryevents.InventoryReservationFailedPayload,
 	) error
 
-	HandlePaymentCompleted(
-		ctx context.Context,
-		payload paymentevents.PaymentSucceededPayload,
-	) error
+	HandlePaymentCompleted(ctx context.Context,payload paymentevents.PaymentSucceededPayload) error
 
-	HandlePaymentFailed(
-		ctx context.Context,
-		payload paymentevents.PaymentFailedPayload,
-	) error
+	HandlePaymentFailed(ctx context.Context,payload paymentevents.PaymentFailedPayload) error
 
-	HandleInventoryReleased(
-		context.Context,
-		inventoryevents.InventoryReleasedPayload,
-	) error
+	HandleInventoryReleased(context.Context,inventoryevents.InventoryReleasedPayload) error
 }

@@ -413,10 +413,7 @@ func (s *inventoryService) ExpireReservation(
 	})
 }
 
-func (s *inventoryService) ReserveInventory(
-	ctx context.Context,
-	request sagaevent.ReserveInventoryPayload,
-) error {
+func (s *inventoryService) ReserveInventory(ctx context.Context,request sagaevent.ReserveInventoryPayload) error {
 
 	for _, item := range request.Items {
 
@@ -477,13 +474,7 @@ func (s *inventoryService) ReserveInventory(
 }
 
 
-func (s *inventoryService) ReleaseInventory(
-
-	ctx context.Context,
-
-	request sagaevent.ReleaseInventoryPayload,
-
-) error {
+func (s *inventoryService) ReleaseInventory(ctx context.Context,request sagaevent.ReleaseInventoryPayload) error {
 
 	log.Println("Releasing inventory...")
 

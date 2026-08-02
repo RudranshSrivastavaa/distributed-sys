@@ -49,10 +49,7 @@ func (s *paymentService) ProcessPayment(paymentID uuid.UUID,request dto.ProcessP
 	), nil
 }
 
-func (s *paymentService) HandleProcessPaymentCommand(
-	ctx context.Context,
-	request sagaevent.ProcessPaymentPayload,
-) error {
+func (s *paymentService) HandleProcessPaymentCommand(ctx context.Context,request sagaevent.ProcessPaymentPayload) error {
 
 	orderID, err := uuid.Parse(request.OrderID)
 	if err != nil {

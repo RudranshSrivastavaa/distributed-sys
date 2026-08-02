@@ -19,10 +19,7 @@ type PaymentService interface {
 
 	ProcessPayment(paymentID uuid.UUID,request dto.ProcessPaymentRequest) (dto.PaymentResponse, error)
 
-	HandleProcessPaymentCommand(
-	ctx context.Context,
-	request sagaevent.ProcessPaymentPayload,
-) error
+	HandleProcessPaymentCommand(ctx context.Context,request sagaevent.ProcessPaymentPayload) error
 
 	GetPayment(id uuid.UUID) (dto.PaymentResponse, error)
 

@@ -36,6 +36,10 @@ func Start() {
 
 	kafkaConfig := kafkaa.DefaultConfig()
 
+	kafkaConfig.TLS.Enabled = true
+
+	kafkaConfig.TLS.CAFile = "../../certs/ca/ca.crt"
+
 	kafkaConfig.Consumer.GroupID = "order-group"
 
 	client := kafkaa.NewClient(kafkaConfig)
@@ -96,7 +100,6 @@ func Start() {
 			),
 		),
 	)
-
 
 	dispatcher.Register(
 		kafkaa.CancelOrder,

@@ -39,6 +39,11 @@ func Start() {
 	//----------------------------------------------------
 
 	kafkaConfig := kafkaa.DefaultConfig()
+
+	kafkaConfig.TLS.Enabled = true
+
+	kafkaConfig.TLS.CAFile = "../../certs/ca/ca.crt"
+
 	kafkaConfig.Consumer.GroupID = "inventory-group"
 
 	client := kafkaa.NewClient(kafkaConfig)

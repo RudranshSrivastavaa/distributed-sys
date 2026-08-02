@@ -4,10 +4,30 @@ import (
 	"github.com/IBM/sarama"
 )
 
+type TLSConfig struct {
+	Enabled bool
+
+	CAFile string
+}
+
+type SASLConfig struct {
+	Enabled bool
+
+	Username string
+
+	Password string
+
+	Mechanism sarama.SASLMechanism
+}
+
 type Config struct {
 	Brokers []string
 
 	ClientID string
+
+	TLS TLSConfig
+
+	SASL SASLConfig
 
 	Version sarama.KafkaVersion
 
@@ -35,10 +55,20 @@ func DefaultConfig() Config {
 	return Config{
 
 		Brokers: []string{
-			"localhost:29092",
+			"localhost:9094",
 		},
 
 		ClientID: "distributed-commerce",
+
+		TLS: TLSConfig{
+			Enabled: false,
+			CAFile:  "",
+		},
+
+		SASL: SASLConfig{
+
+			Enabled: false,
+		},
 
 		Version: sarama.V4_0_0_0,
 

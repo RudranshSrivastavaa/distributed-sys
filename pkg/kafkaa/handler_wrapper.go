@@ -16,10 +16,7 @@ func WrapHandler[T any](handler TypedHandler[T]) EventHandler {
 
 func (w *wrappedHandler[T]) Handle(ctx context.Context,message ConsumedMessage) error {
 
-	payload, err := DecodePayload[T](
-
-		message.Event,
-	)
+	payload, err := DecodePayload[T](message.Event)
 
 	if err != nil {
 

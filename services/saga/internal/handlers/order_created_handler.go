@@ -13,19 +13,14 @@ type OrderCreatedHandler struct {
 	sagaService service.SagaService
 }
 
-func NewOrderCreatedHandler(
-	sagaService service.SagaService,
-) *OrderCreatedHandler {
+func NewOrderCreatedHandler(sagaService service.SagaService) *OrderCreatedHandler {
 
 	return &OrderCreatedHandler{
 		sagaService: sagaService,
 	}
 }
 
-func (h *OrderCreatedHandler) Handle(
-	ctx context.Context,
-	metadata kafkaa.Metadata,
-	payload orderevents.OrderCreatedPayload,
+func (h *OrderCreatedHandler) Handle(ctx context.Context,metadata kafkaa.Metadata,payload orderevents.OrderCreatedPayload,
 ) error {
 
 	log.Println("===== ORDER_CREATED RECEIVED BY SAGA =====")

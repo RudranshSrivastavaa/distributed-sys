@@ -7,24 +7,15 @@ import (
 
 type ConsumerHost interface {
 
-    Register(
-        topic Topic,
-        Dispatcher Dispatcher,
-    )
-
-    Start(
-        ctx context.Context,
-    ) error
-
+    Register(topic Topic,Dispatcher Dispatcher)
+    Start(ctx context.Context) error
     Close() error
 }
 
 type consumerHost struct {
 
     client *Client
-
     group sarama.ConsumerGroup
-
 	registrations map[string]Registration
 }
 
@@ -37,14 +28,9 @@ func NewConsumerHost(client *Client) (ConsumerHost, error) {
 	}
 
 	return &consumerHost{
-
 		client: client,
-
 		group: group,
-
-		registrations: make(
-			map[string]Registration,
-		),
+		registrations: make(map[string]Registration),
 	}, nil
 }
 
@@ -58,11 +44,7 @@ func (h *consumerHost) Register(topic Topic,dispatcher Dispatcher) {
 }
 func (h *consumerHost) Start(ctx context.Context) error {
 
-	topics := make(
-		[]string,
-		0,
-		len(h.registrations),
-	)
+	topics := make([]string,0,len(h.registrations))
 
 	for topic := range h.registrations {
 
@@ -81,14 +63,7 @@ func (h *consumerHost) Start(ctx context.Context) error {
 
 	for {
 
-		if err := h.group.Consume(
-
-			ctx,
-
-			topics,
-
-			adapter,
-		); err != nil {
+		if err := h.group.Consume(ctx,topics,adapter); err != nil {
 
 			return err
 		}

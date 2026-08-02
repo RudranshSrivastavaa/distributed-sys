@@ -24,13 +24,7 @@ func NewProducer(client *Client) (Producer, error) {
 	}, nil
 }
 
-func (p *producer) Publish(
-    ctx context.Context,
-    topic string,
-    key string,
-    event Event,
-
-) error {
+func (p *producer) Publish(ctx context.Context,topic string,key string,event Event) error {
 
     if err := ValidateMetadata(
         event.Metadata,

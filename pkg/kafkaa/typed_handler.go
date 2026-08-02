@@ -4,13 +4,6 @@ import "context"
 
 type TypedHandler[T any] interface {
 
-	Handle(
-
-		ctx context.Context,
-
-		metadata Metadata,
-
-		payload T,
-
-	) error
+	Handle(ctx context.Context , metadata Metadata , payload T) error
+	
 }

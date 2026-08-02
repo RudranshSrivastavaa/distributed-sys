@@ -2,18 +2,7 @@ package kafkaa
 
 import "encoding/json"
 
-func Deserialize(
+func Deserialize(data []byte,event *Event) error {
 
-	data []byte,
-
-	event *Event,
-
-) error {
-
-	return json.Unmarshal(
-
-		data,
-
-		event,
-	)
+	return json.Unmarshal(data,event)
 }

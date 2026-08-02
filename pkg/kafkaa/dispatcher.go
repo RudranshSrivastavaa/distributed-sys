@@ -7,15 +7,8 @@ import (
 
 type Dispatcher interface {
 
-	Register(
-		eventType EventType,
-		handler EventHandler,
-	)
-
-	Dispatch(
-		ctx context.Context,
-		message ConsumedMessage,
-	) error
+	Register(eventType EventType,handler EventHandler)
+	Dispatch(ctx context.Context,message ConsumedMessage) error
 }
 
 type dispatcher struct {
@@ -24,11 +17,9 @@ type dispatcher struct {
 }
 
 func NewDispatcher() Dispatcher {
-
+	
 	return &dispatcher{
-		handlers: make(
-			map[EventType]EventHandler,
-		),
+		handlers: make(map[EventType]EventHandler),
 	}
 }
 
@@ -55,10 +46,5 @@ func (d *dispatcher) Dispatch(ctx context.Context,message ConsumedMessage) error
 		)
 	}
 
-	return handler.Handle(
-
-		ctx,
-
-		message,
-	)
+	return handler.Handle(ctx,message)
 }

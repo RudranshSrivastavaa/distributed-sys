@@ -24,10 +24,7 @@ type InventoryService interface {
 
 	GetExpiredReservations() ([]model.Reservation, error)
 
-	ReserveInventory(
-		ctx context.Context,
-		request sagaevent.ReserveInventoryPayload,
-	) error
+	ReserveInventory(ctx context.Context,request sagaevent.ReserveInventoryPayload) error
 
 	ReleaseInventory(
 		ctx context.Context,

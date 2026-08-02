@@ -9,34 +9,22 @@ import (
 
 type consumerHandler struct {
 	ctx context.Context
-
 	registrations map[string]Registration
 }
 
-func (h *consumerHandler) Setup(
-
-	sarama.ConsumerGroupSession,
-
-) error {
+func (h *consumerHandler) Setup(sarama.ConsumerGroupSession) error {
 
 	return nil
 
 }
 
-func (h *consumerHandler) Cleanup(
-
-	sarama.ConsumerGroupSession,
-
-) error {
+func (h *consumerHandler) Cleanup(sarama.ConsumerGroupSession) error {
 
 	return nil
 
 }
 
-func (h *consumerHandler) ConsumeClaim(
-	session sarama.ConsumerGroupSession,
-	claim sarama.ConsumerGroupClaim,
-) error {
+func (h *consumerHandler) ConsumeClaim(session sarama.ConsumerGroupSession,claim sarama.ConsumerGroupClaim) error {
 
 	for message := range claim.Messages() {
 
@@ -67,18 +55,10 @@ func (h *consumerHandler) ConsumeClaim(
 
 		var event Event
 
-		err := Deserialize(
-			message.Value,
-			&event,
-		)
+		err := Deserialize(message.Value,&event)
 
 		if err != nil {
-
-			log.Printf(
-				"failed to deserialize event: %v",
-				err,
-			)
-
+			log.Printf("failed to deserialize event: %v",err)
 			continue
 		}
 

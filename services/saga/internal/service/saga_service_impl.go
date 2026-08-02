@@ -17,26 +17,19 @@ import (
 
 type sagaService struct {
 	repository repository.SagaRepository
-
 	producer kafkaa.Producer
 }
 
-func NewSagaService(
-	repository repository.SagaRepository,
-	producer kafkaa.Producer,
-) SagaService {
+func NewSagaService(repository repository.SagaRepository,producer kafkaa.Producer) SagaService {
 
 	return &sagaService{
 
 		repository: repository,
-
 		producer: producer,
 	}
 }
 
-func (s *sagaService) StartSaga(
-	ctx context.Context,
-	payload orderevents.OrderCreatedPayload,
+func (s *sagaService) StartSaga(ctx context.Context,payload orderevents.OrderCreatedPayload,
 ) error {
 
 	log.Println("Starting saga for order:", payload.OrderID)
@@ -65,13 +58,11 @@ func (s *sagaService) StartSaga(
 		PaymentStatus: model.StepPending,
 	}
 
-	if err := s.repository.Create(
-		saga,
-	); err != nil {
-
+	if err := s.repository.Create(saga); err != nil {
 		return err
 	}
 	log.Println("Saga created")
+
 	//------------------------------------------
 	// Build Command
 	//------------------------------------------
@@ -88,17 +79,9 @@ func (s *sagaService) StartSaga(
 		})
 	}
 
-	command, err := sagaevent.BuildReserveInventoryCommand(
-
-		orderID,
-
-		payload.CustomerID,
-
-		items,
-	)
+	command, err := sagaevent.BuildReserveInventoryCommand(orderID,payload.CustomerID,items)
 
 	if err != nil {
-
 		return err
 	}
 
@@ -118,10 +101,7 @@ func (s *sagaService) StartSaga(
 	)
 }
 
-func (s *sagaService) HandleInventoryReserved(
-	ctx context.Context,
-	payload inventoryevents.InventoryReservedPayload,
-) error {
+func (s *sagaService) HandleInventoryReserved(ctx context.Context,payload inventoryevents.InventoryReservedPayload) error {
 
 	log.Println("Updating saga...")
 
@@ -231,10 +211,7 @@ func (s *sagaService) HandleInventoryReservationFailed(
 	)
 }
 
-func (s *sagaService) HandlePaymentCompleted(
-	ctx context.Context,
-	payload paymentevents.PaymentSucceededPayload,
-) error {
+func (s *sagaService) HandlePaymentCompleted(ctx context.Context,payload paymentevents.PaymentSucceededPayload) error {
 
 	log.Println("1. Finding saga")
 
@@ -285,10 +262,7 @@ func (s *sagaService) HandlePaymentCompleted(
 }
 
 
-func (s *sagaService) HandlePaymentFailed(
-	ctx context.Context,
-	payload paymentevents.PaymentFailedPayload,
-) error {
+func (s *sagaService) HandlePaymentFailed(ctx context.Context,payload paymentevents.PaymentFailedPayload) error {
 
 	log.Println("Updating saga...")
 
